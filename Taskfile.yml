@@ -8,8 +8,16 @@ tasks:
       - go mod init github.com/iainvm/AdventOfCode/{{ .CLI_ARGS }}
       - touch main.go
 
+  tidy-task:
+    silent: true
+    dir: "{{ .CLI_ARGS }}"
+    cmds:
+      - go mod tidy
+
+
   run-task:
     silent: true
+    deps: [ tidy-task ]
     dir: "{{ .CLI_ARGS }}"
     cmds:
       - go run .
