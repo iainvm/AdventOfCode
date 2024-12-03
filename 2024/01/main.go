@@ -6,6 +6,8 @@ import (
 	"math"
 	"os"
 	"slices"
+
+	mySlices "github.com/iainvm/AdventOfCode/shared/slices"
 )
 
 func main() {
@@ -25,7 +27,7 @@ func main() {
 }
 
 func CalculateSimilarity(list1, list2 []int) int {
-	list2Counts := CountSlice(list2)
+	list2Counts := mySlices.CountSlice(list2)
 
 	similarity := 0
 	for i := 0; i < len(list1); i++ {
@@ -47,15 +49,6 @@ func CalculateDistance(list1, list2 []int) int {
 		distance += int(math.Abs(float64(list1[i] - list2[i])))
 	}
 	return distance
-}
-
-// CountSlice returns a map where the index is the value of the slice and the value is the number of times that value appears in the slice
-func CountSlice[T comparable](s []T) map[T]int {
-	counts := make(map[T]int)
-	for _, v := range s {
-		counts[v]++
-	}
-	return counts
 }
 
 // ReadInput reads the input.txt file and returns the two lists of ints
