@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -27,6 +26,18 @@ func CountSafeReports(reports [][]int) int {
 	for _, report := range reports {
 		if IsSafeReport(report) {
 			safeReportsTally++
+		} else {
+			// Try all versions of report removing one element
+			for i := 0; i < len(report); i++ {
+				// Create a new report without the element at index i
+				newReport := make([]int, len(report)-1)
+				copy(newReport[:i], report[:i])
+				copy(newReport[i:], report[i+1:])
+				if IsSafeReport(newReport) {
+					safeReportsTally++
+					break
+				}
+			}
 		}
 	}
 	return safeReportsTally
@@ -34,41 +45,43 @@ func CountSafeReports(reports [][]int) int {
 
 // IsSafeReport returns true if the report is safe
 func IsSafeReport(report []int) bool {
-	allowedDifferential := 3
+	differentials := make([]int, len(report)-1)
+	positive, negative := 0, 0
 
-	// Determine if the report is increasing or decreasing
-	increasing := true
-	if report[0] > report[1] {
-		increasing = false
+	// Calculate differentials
+	for i := 0; i < len(report)-1; i++ {
+		// Calculate differential
+		diff := report[i+1] - report[i]
+		differentials[i] = diff
+
+		// Count signs
+		if diff > 0 {
+			positive++
+		} else if diff < 0 {
+			negative++
+		}
 	}
 
-	previous := report[0]
-	for i := 1; i < len(report); i++ {
-		// differential should be
-		// positive if increasing
-		// negative if decreasing
-		differential := report[i] - previous
-
-		// If differential is 0
-		if differential == 0 {
-			return false
+	if DifferentialsWithinLimits(differentials, -3, 3) {
+		if positive == 0 || negative == 0 {
+			return true
 		}
-
-		// If differential is too great
-		if int(math.Abs(float64(differential))) > allowedDifferential {
-			return false
-		}
-
-		if increasing && differential < 0 {
-			return false
-		}
-		if !increasing && differential > 0 {
-			return false
-		}
-
-		previous = report[i]
 	}
 
+	return false
+}
+
+// DifferentialsWithinLimits returns true if all differentials are within the limits
+func DifferentialsWithinLimits(differentials []int, lowerLimit, upperLimit int) bool {
+	for _, diff := range differentials {
+		if diff < lowerLimit || diff > upperLimit {
+			return false
+		}
+
+		if diff == 0 {
+			return false
+		}
+	}
 	return true
 }
 
@@ -77,6 +90,7 @@ func IsSafeReport(report []int) bool {
 // 1 report per line
 // Each report is a list of integers
 func ReadInput() ([][]int, error) {
+	// file, err := os.Open("example_input.txt")
 	file, err := os.Open("input.txt")
 	if err != nil {
 		return nil, err
